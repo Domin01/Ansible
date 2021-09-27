@@ -1,0 +1,95 @@
+- hosts: servidores
+  become: true
+  tasks:
+     # No sirve para nada, realizamos un ping
+     - name: "Comprobamos si tiene conectividad"
+       ping:
+     # Creamos un usuario nuevo en el sistema
+     - name: Añadimos al usuario word
+       user:
+         name: word
+         shell: /bin/bash
+         password: $6$awJyizEDOCZE0iS9$CbWuwnL4d5x2wBq.r8iQWfcLQg0YNzwX0sQfJvV.qJyUeQsC/i9ASPzCo7SuQmwm8j.uDlDCkVeeVqAWl5W1k.
+         comment: Word Press
+         uid: 1050
+         group: debian
+     # Descargar wordpress
+     - name: Descargar wordpress
+       get_url:
+            url: https://wordpress.org/latest.zip
+            dest: /home/word/word.zip
+     # Instalar paquete unzip
+     #- name: Instalar paquete unzip
+     #  apt:
+     #    name: unzip
+     # Instalar conjunto de paquetes
+     - name: Instalar Git, MariaDB, Unzip, pip3
+       apt:
+         name: "{{ packages }}"
+       vars:
+           packages:
+           - git
+           - unzip
+           - mariadb-server
+           - python3-mysqldb
+           - python3-pip
+     # Instalar con pip el paquete pymysql
+     - name: Install bottle python package
+       pip:
+         name: pymysql
+
+     # Guardar contraseña de root en el fichero .my.cnf
+     - name: Save root password in .my.cnf
+       template:
+         src: root_cnf.j2
+         dest: /root/.my.cnf
+         owner: root
+         mode: '0600'
+
+     # Cambiar contraseña root
+     - name: Set password for root user
+       mysql_user:
+          name: "root"
+          password: "root"
+          priv: '*.*:ALL,GRANT'
+          host: 'localhost'
+          login_unix_socket: /var/run/mysqld/mysqld.sock
+          state: present
+     # Descomprimir zip wordpress
+     - name: Descomprimir en zip
+       ansible.builtin.unarchive:
+         src: /home/word/word.zip
+         dest: /home/word
+         remote_src: yes
+
+     # Crear base de datos para wordpress
+     - name: Crear una base de datos para wordpress
+       mysql_db:	 
+         login_unix_socket: /var/run/mysqld/mysqld.sock
+         name: alejandro_wordpress
+         state: present
+     # Crear usuario para la base de datos
+     - name: Crear usuario con todos los privilegios
+       mysql_user:
+         name: alejandro
+         password: $6$zwh3ioSSFqVlfYmU$.ZJoV5KnpSNN59On0lqud2emFRted0f9mk8Kk8QwK0AVOcIgP2xfIWpr27yxIqGfhcpkfH.AISJt5gyvdt/Zh.
+         priv: '*.*:ALL'
+         state: present
+     # Clonar repositorios git
+     - name: Clonar repositorios git
+       ansible.builtin.git:
+         repo: https://github.com/josedom24/ansible_ejemplos.git
+         dest: /home/word/git
+    #Actualizamos los paquetes apt update;apt upgrade
+    #- name: "Actualizamos el sistema"
+    #  apt: update_cache=yes upgrade=yes
+    #  # instalar un paquete
+      # Copia un fichero a la máquina remoto
+    #- name: "Copiar fichero al servidor remoto"
+    #  copy:
+    #    src: files/foo.conf
+    #    dest: /etc/foo.conf
+    #    owner: root
+    #    group: root
+    #    mode: '0644'
+    

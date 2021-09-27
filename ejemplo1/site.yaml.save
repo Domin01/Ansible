@@ -1,0 +1,40 @@
+- hosts: servidores
+  become: true
+  tasks:
+     # No sirve para nada, realizamos un ping
+     - name: "Comprobamos si tiene conectividad"
+       ping:
+     # Creamos un usuario nuevo en el sistema
+     - name: "Añadimos al usuario word"
+       user:
+         name: word
+         shell: /bin/bash
+         password: $6$awJyizEDOCZE0iS9$CbWuwnL4d5x2wBq.r8iQWfcLQg0YNzwX0sQfJvV.qJyUeQsC/i9ASPzCo7SuQmwm8j.uDlDCkVeeVqAWl5W1k.
+         comment: Word Press
+         uid: 1050
+         group: debian
+      - name: Download foo.conf
+        get_url:
+            url:- name: Download foo.conf
+  get_url:
+    url: http://example.com/path/file.conf
+    dest: /etc/foo.conf
+    mode: '0440' 
+            dest: /etc/foo.conf
+            mode: '0440'
+      # Actualizamos los paquetes apt update;apt upgrade
+    #- name: "Actualizamos el sistema"
+    #  apt: update_cache=yes upgrade=yes
+    #  # instalar un paquete
+    #- name: "Instalar paquete git"
+    #  apt:
+    #    name: git
+      # Copia un fichero a la máquina remoto
+    #- name: "Copiar fichero al servidor remoto"
+    #  copy:
+    #    src: files/foo.conf
+    #    dest: /etc/foo.conf
+    #    owner: root
+    #    group: root
+    #    mode: '0644'
+    
